@@ -162,7 +162,7 @@ router.get("/categories/:category", async (req, res) => {
 
 app.get("/connexion", async (req, res) => {
     if (req.user) return res.redirect("/");
-    res.render("connexion", {
+    res.render("Connexion", {
         titre: "Connexion | EvenementScolaire",
         style: ["/css/maquillage_connexion.css"],
         script: ["/js/login.js"],
@@ -171,7 +171,7 @@ app.get("/connexion", async (req, res) => {
 
 app.get("/creer_compte", async (req, res) => {
     if (req.user) return res.redirect("/");
-    res.render("creer_compte", {
+    res.render("Creer_compte", {
         titre: "Créer un compte | EvenementScolaire",
         style: ["/css/maquillage_connexion.css"],
         script: ["/js/signup.js"],

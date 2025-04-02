@@ -235,7 +235,7 @@ app.get("/profil", async (req, res) => {
         const notifications = await getNotifications(userId); // 🔥 Récupération des notifications
 
         // Passer les données à la vue
-        res.render("profil", {
+        res.render("Profil", {
             titre: "Profil | EvenementScolaire",
             style: ["/css/profil.css"],
             script: [

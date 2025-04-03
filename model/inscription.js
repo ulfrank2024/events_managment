@@ -15,52 +15,109 @@ export async function registerForEvent(user_id, event_id) {
             throw new Error("Vous êtes déjà inscrit à cet événement.");
         }
 
-        // Inscription de l'utilisateur
+        // Récupérer les informations de l'événement
+        const event = await connexion.get(
+            "SELECT title, description, date, location FROM events WHERE id = ?",
+            [event_id]
+        );
+
+        if (!event) {
+            throw new Error("Événement non trouvé.");
+        }
+
+        // Inscription de l'utilisateur dans la table participants
         await connexion.run(
             "INSERT INTO participants (user_id, event_id, status) VALUES (?, ?, 'inscrit')",
             [user_id, event_id]
         );
 
+        // Inscription dans la table inscriptions avec la date
+        await connexion.run(
+            "INSERT INTO inscriptions (user_id, event_id, date_inscription) VALUES (?, ?, datetime('now', 'localtime'))",
+            [user_id, event_id]
+        );
+
         // Récupérer l'email de l'utilisateur
-        const user = await connexion.get("SELECT email FROM users WHERE id = ?", [user_id]);
+        const user = await connexion.get(
+            "SELECT email FROM users WHERE id = ?",
+            [user_id]
+        );
         if (!user || !user.email) {
-            throw new Error("Impossible de récupérer l'adresse e-mail de l'utilisateur.");
+            throw new Error(
+                "Impossible de récupérer l'adresse e-mail de l'utilisateur."
+            );
         }
 
         // Ajouter une notification pour l'utilisateur
-        await createNotification(user_id, `Vous êtes inscrit à l'événement ID: ${event_id}`);
+        await createNotification(
+            user_id,
+            `Vous êtes inscrit à l'événement : ${event.title} (${event.date}) 
+            - ${event.location}. Description: ${event.description}`
+        );
 
         // Envoyer un email de confirmation
-        await sendEmail(user.email, "Inscription confirmée", `Vous êtes inscrit à l'événement ID: ${event_id}`);
+        await sendEmail(
+            user.email,
+            "Inscription confirmée",
+            `Vous êtes inscrit à l'événement : ${event.title} (${event.date}) - ${event.location}. Description: ${event.description}`
+        );
 
-        return { success: true, message: "Inscription réussie et email envoyé !" };
+        return {
+            success: true,
+            message: "Inscription réussie et email envoyé !",
+        };
     } catch (error) {
         console.error("Erreur lors de l'inscription à l'événement :", error);
         throw error;
     }
-}
 
+}
 // Annulation d'inscription à un événement
 export async function cancelEventRegistration(user_id, event_id) {
     try {
+        // Récupérer les informations de l'événement
+        const event = await connexion.get(
+            "SELECT title, description, date, location FROM events WHERE id = ?",
+            [event_id]
+        );
+
+        if (!event) {
+            throw new Error("Événement non trouvé.");
+        }
+
         await connexion.run(
             "UPDATE participants SET status = 'annulé' WHERE user_id = ? AND event_id = ?",
             [user_id, event_id]
         );
 
         // Récupérer l'email de l'utilisateur
-        const user = await connexion.get("SELECT email FROM users WHERE id = ?", [user_id]);
+        const user = await connexion.get(
+            "SELECT email FROM users WHERE id = ?",
+            [user_id]
+        );
         if (!user || !user.email) {
-            throw new Error("Impossible de récupérer l'adresse e-mail de l'utilisateur.");
+            throw new Error(
+                "Impossible de récupérer l'adresse e-mail de l'utilisateur."
+            );
         }
 
         // Ajouter une notification pour l'utilisateur
-        await createNotification(user_id, `Vous avez annulé votre inscription à l'événement ID: ${event_id}`);
+        await createNotification(
+            user_id,
+            `Vous avez annulé votre inscription à l'événement : ${event.title} (${event.date}) - ${event.location}. Description: ${event.description}`
+        );
 
         // Envoyer un email de confirmation d'annulation
-        await sendEmail(user.email, "Annulation d'inscription", `Vous avez annulé votre inscription à l'événement ID: ${event_id}`);
+        await sendEmail(
+            user.email,
+            "Annulation d'inscription",
+            `Vous avez annulé votre inscription à l'événement : ${event.title} (${event.date}) - ${event.location}. Description: ${event.description}`
+        );
 
-        return { success: true, message: "Inscription annulée et email envoyé !" };
+        return {
+            success: true,
+            message: "Inscription annulée et email envoyé !",
+        };
     } catch (error) {
         console.error("Erreur lors de l'annulation de l'inscription :", error);
         throw error;
@@ -115,4 +172,28 @@ export async function getnumberInscription() {
         throw error;
     }
 }
+export async function getInscription() {
+    try {
+        const inscriptions = await connexion.all(`
+      SELECT 
+                users.name AS nom_utilisateur,
+                events.title AS titre_evenement,
+                events.date AS date_evenement,
+                inscriptions.date_inscription AS date_inscription
+            FROM participants
+            JOIN users ON participants.user_id = users.id
+            JOIN events ON participants.event_id = events.id
+            JOIN inscriptions ON participants.user_id = inscriptions.user_id AND participants.event_id = inscriptions.event_id;
+        `);
+
+        return inscriptions;
+    } catch (error) {
+        console.error(
+            "Erreur lors de la récupération des inscriptions :",
+            error
+        );
+        throw error;
+    }
+}
+
 

@@ -32,6 +32,21 @@ export async function getUtilisateurByCourriel(courriel) {
         return null;
     }
 }
+export async function utilisateurcomplet() {
+    try {
+        const utilisateur = await connexion.all(
+            `SELECT id, name, email, role, created_at FROM users`
+        );
+        return utilisateur;
+    } catch (error) {
+        console.error(
+            "Erreur lors de la recuperation des utilisateur :",
+            error.message
+        );
+        return null;
+    }
+}
+
 
 // ✅ Ajouter un utilisateur avec hashage du mot de passe
 export async function addUtilisateur(name, email, password, role) {

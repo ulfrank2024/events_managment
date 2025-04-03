@@ -27,14 +27,15 @@ import {
     cancelEventRegistration,
     getStudentEventCount,
     getStudentEvents,
-    getnumberInscription
+    getnumberInscription,
+    getInscription,
 } from "./model/inscription.js";
 import {
-
     getUtilisateurById,
     getUtilisateurByCourriel,
     addUtilisateur,
     GetUserProfile,
+    utilisateurcomplet,
 } from "./model/utilisateur.js";
 import {
     createEvent, GetEventDetailsById,
@@ -250,6 +251,8 @@ app.get("/profil", async (req, res) => {
                 "/js/page_profil.js",
                 "/js/notification.js",
                 "/js/dashboard.js",
+                "/js/utilisateurbase.js",
+                "/js/telecharger.js",
             ],
             user: req.user,
             eventCount,
@@ -950,7 +953,39 @@ router.post("/rate-site", async (req, res) => {
         res.status(500).json({ message: "Erreur lors de l'enregistrement de l'évaluation" });
     }
 });
-
+// Route pour récupérer tous les utilisateurs
+app.get('/utilisateurs', async (req, res) => {
+    try {
+        const utilisateurs = await utilisateurcomplet();
+        if (utilisateurs) {
+            res.json(utilisateurs);
+        } else {
+            res.status(500).json({ error: "Erreur lors de la récupération des utilisateurs." });
+        }
+    } catch (error) {
+        console.error("Erreur lors de la récupération des utilisateurs :", error.message);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
+// Route pour récupérer tous les utilisateurs
+app.get("/inscriptionsevent", async (req, res) => {
+    try {
+        const inscription = await getInscription();
+        if (inscription) {
+            res.json(inscription);
+        } else {
+            res.status(500).json({
+                error: "Erreur lors de la récupération des inscription.",
+            });
+        }
+    } catch (error) {
+        console.error(
+            "Erreur lors de la récupération des inscription:",
+            error.message
+        );
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
 // Attacher `router` à l'application
 app.use(router);
 

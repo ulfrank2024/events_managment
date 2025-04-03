@@ -169,10 +169,18 @@ app.get("/connexion", async (req, res) => {
     });
 });
 
-app.get("/creer_compte", async (req, res) => {
+app.get("/creer_compte_utilisateur", async (req, res) => {
     if (req.user) return res.redirect("/");
     res.render("Creer_compte", {
-        titre: "Créer un compte | EvenementScolaire",
+        titre: "Créer un compte utilisateur | EvenementScolaire",
+        style: ["/css/maquillage_connexion.css"],
+        script: ["/js/signup.js"],
+    });
+});
+app.get("/creer_compte_admin", async (req, res) => {
+    if (req.user) return res.redirect("/");
+    res.render("Creer_compte_admin", {
+        titre: "Créer un compte administrateur | EvenementScolaire",
         style: ["/css/maquillage_connexion.css"],
         script: ["/js/signup.js"],
     });

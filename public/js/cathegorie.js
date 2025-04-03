@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         .querySelector("h1")
         .textContent.replace("Événements de la catégorie : ", "")
         .trim();
+    const userId = localStorage.getItem("user_id"); // Récupérer l'ID de l'utilisateur
+    const userRole = localStorage.getItem("user_role"); // Récupérer le rôle de l'utilisateur
 
     try {
         // Récupérer les événements via l'API
@@ -18,6 +20,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 // Créer un élément pour chaque événement
                 const eventCard = document.createElement("div");
                 eventCard.classList.add("event-card"); // Cible la classe 'event-card'
+                eventCard.setAttribute("data-event-id", event.id); // Ajout d'un attribut data-event-id
 
                 const eventTitle = document.createElement("h2");
                 eventTitle.textContent = event.title;
@@ -42,8 +45,94 @@ document.addEventListener("DOMContentLoaded", async function () {
                     eventCard.appendChild(eventImage);
                 }
 
-                eventsList.appendChild(eventCard); // Ajoute chaque carte d'événement
+                // Ajout des boutons "Voir" et "S'inscrire"
+                const buttonsDiv = document.createElement("div");
+                buttonsDiv.classList.add("blockbutton");
+
+                const voirButton = document.createElement("button");
+                voirButton.classList.add("voirevenement");
+                voirButton.textContent = "Voir";
+                voirButton.setAttribute("data-id", event.id);
+                buttonsDiv.appendChild(voirButton);
+
+                // Vérification du rôle avant d'afficher le bouton "S'inscrire"
+                if (userId && userRole !== "administrateur") {
+                    const inscrireButton = document.createElement("button");
+                    inscrireButton.classList.add("inscriptionEvenement");
+                    inscrireButton.textContent = "S'inscrire";
+                    inscrireButton.setAttribute("data-id", event.id);
+                    buttonsDiv.appendChild(inscrireButton);
+                } else if (!userId) {
+                    const redirectConnexion = document.createElement("button");
+                    redirectConnexion.classList.add("redirectConnexion");
+                    redirectConnexion.textContent = "S'inscrire";
+                    buttonsDiv.appendChild(redirectConnexion);
+                }
+
+                eventCard.appendChild(buttonsDiv);
+                eventsList.appendChild(eventCard);
+
+                const errorMessage = document.createElement("p");
+                errorMessage.classList.add("message-erreur");
+                errorMessage.style.color = "red";
+                errorMessage.style.display = "none";
+                eventCard.appendChild(errorMessage);
             });
+
+            // Gestionnaires d'événements pour les boutons
+            document.querySelectorAll(".voirevenement").forEach((button) => {
+                button.addEventListener("click", (event) => {
+                    const eventId = event.target.getAttribute("data-id");
+                    window.location.href = `/evenement/${eventId}`;
+                });
+            });
+
+            document
+                .querySelectorAll(".inscriptionEvenement")
+                .forEach((button) => {
+                    button.addEventListener("click", async (event) => {
+                        const eventId = event.target.getAttribute("data-id");
+
+                        try {
+                            const response = await fetch("/inscription", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    user_id: userId,
+                                    event_id: eventId,
+                                }),
+                            });
+
+                            const responseData = await response.json();
+                            const eventCard =
+                                event.target.closest(".event-card");
+                            const errorMessage =
+                                eventCard.querySelector(".message-erreur");
+
+                            if (!response.ok) {
+                                errorMessage.textContent =
+                                    responseData.message ||
+                                    "Vous êtes déjà inscrit.";
+                                errorMessage.style.display = "block";
+                                return;
+                            }
+
+                            event.target.disabled = true;
+                            event.target.textContent = "Déjà inscrit";
+                            errorMessage.style.display = "none";
+                        } catch (error) {
+                            console.error("Erreur :", error);
+                        }
+                    });
+                });
+
+            document
+                .querySelectorAll(".redirectConnexion")
+                .forEach((button) => {
+                    button.addEventListener("click", () => {
+                        window.location.href = "/connexion";
+                    });
+                });
         } else {
             const message = document.querySelector(".message");
             message.textContent =

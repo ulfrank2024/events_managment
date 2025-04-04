@@ -36,55 +36,71 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-  form.addEventListener("submit", async (event) => {
-      event.preventDefault(); // Empêche le rechargement de la page
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault(); // Empêche le rechargement de la page
 
-      errorMessage.textContent = ""; // Efface le message d'erreur précédent
+        errorMessage.textContent = ""; // Efface le message d'erreur précédent
 
-      const formData = new FormData(form); // Récupère les données du formulaire
+        const formData = new FormData(form); // Récupère les données du formulaire
+        const date = formData.get("date");
+        const location = formData.get("location");
 
-      // Vérification de la catégorie envoyée
-      const category = formData.get("category");
-      console.log("Catégorie envoyée:", category); // Ajoute ce log pour vérifier
+        // Vérification de la catégorie envoyée
+        const category = formData.get("category");
+        console.log("Catégorie envoyée:", category); // Ajoute ce log pour vérifier
 
-      // Si la catégorie n'est pas valide, la remplacer par 'autre'
-      const validCategories = [
-          "conférence",
-          "atelier",
-          "sport",
-          "culture",
-          "autre",
-      ];
-      if (!validCategories.includes(category)) {
-          formData.set("category", "autre"); // Remplace par 'autre' si catégorie invalide
-      }
+        // Si la catégorie n'est pas valide, la remplacer par 'autre'
+        const validCategories = [
+            "conférence",
+            "atelier",
+            "sport",
+            "culture",
+            "autre",
+        ];
+        if (!validCategories.includes(category)) {
+            formData.set("category", "autre"); // Remplace par 'autre' si catégorie invalide
+        }
 
-      let url = "/create";
-      let method = "POST";
+        let url = "/create";
+        let method = "POST";
 
-      if (eventId) {
-          url = `/update/${eventId}`;
-          method = "PUT";
-      }
+        if (eventId) {
+            url = `/update/${eventId}`;
+            method = "PUT";
+        }
 
-      try {
-          const response = await fetch(url, {
-              method: method,
-              body: formData, // Envoie les données avec l'image
-          });
+        try {
+            // Vérifier si un événement existe déjà
+            const checkResponse = await fetch(
+                `/api/check-event?date=${date}&location=${location}`
+            );
+            const checkResult = await checkResponse.json();
 
-          const result = await response.json();
+            if (
+                checkResult.exists &&
+                (!eventId || checkResult.eventId !== eventId)
+            ) {
+                errorMessage.textContent =
+                    "Un événement existe déjà à cette date, heure et lieu.";
+                return; // Empêcher la soumission du formulaire
+            }
 
-          if (response.ok) {
-              window.location.href = "/profil"; // Redirige après soumission
-          } else {
-              errorMessage.textContent = result.message; // Affiche le message d'erreur en rouge sous le bouton
-          }
-      } catch (error) {
-          console.error("Erreur lors de l'envoi du formulaire :", error);
-          errorMessage.textContent =
-              "Une erreur est survenue. Veuillez réessayer.";
-      }
-  });
+            const response = await fetch(url, {
+                method: method,
+                body: formData, // Envoie les données avec l'image
+            });
 
+            const result = await response.json();
+
+            if (response.ok) {
+                window.location.href = "/profil"; // Redirige après soumission
+            } else {
+                errorMessage.textContent = result.message; // Affiche le message d'erreur en rouge sous le bouton
+            }
+        } catch (error) {
+            console.error("Erreur lors de l'envoi du formulaire :", error);
+            errorMessage.textContent =
+                "Une erreur est survenue. Veuillez réessayer.";
+        }
+    });
 });

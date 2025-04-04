@@ -1,161 +1,149 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    const eventId = getEventIdFromURL();
-    eventId ? await loadEventDetails(eventId) : await loadAllEvents();
+    // Récupérer l'ID de l'événement depuis l'URL
+    const eventId = window.location.pathname.split("/").pop();
+    const eventDetailsContainer = document.getElementById("event-details");
 
-    let userRole = localStorage.getItem("user_role"); // Si déjà présent dans le localStorage
-    if (!userRole) {
-        // Si le rôle n'est pas dans le localStorage, effectuer la requête pour le récupérer
-        console.log("Récupération du rôle via l'API...");
+    if (eventDetailsContainer) {
         try {
-            const response = await fetch("/api/get-user-role");
-            if (response.ok) {
-                const data = await response.json();
-                userRole = data.role; // Mettre à jour le rôle
-                // Sauvegarder dans le localStorage pour une utilisation future
-                localStorage.setItem("user_role", userRole);
-                console.log("Rôle mis à jour dans le localStorage :", userRole);
-            } else {
-                console.error("Erreur lors de la récupération du rôle");
-            }
+            const response = await fetch(`/api/evenement/${eventId}`);
+            if (!response.ok)
+                throw new Error("Erreur lors du chargement de l'événement");
+
+            const event = await response.json();
+
+            // Générer et insérer le HTML pour l'événement
+            eventDetailsContainer.innerHTML = `
+                <div class="blockevenement">
+                    <img class="imagedescription" src="${
+                        event.image_url
+                    }" alt="${event.title}" width="400px" height="300px" />
+                     <div class="blockevenement1">
+                    <h3>${event.title}</h3>
+                    <p class="blocdescription">Description : ${
+                        event.description || "Aucune description disponible"
+                    }</p>
+                    <p>Date : ${event.date}</p>
+                    <p>Lieu : ${event.location || "Lieu non précisé"}</p>
+                    <p class="price">${
+                        event.details || "Aucun détail supplémentaire"
+                    }</p>
+                     </div>
+                   
+                </div>
+                 <div class="blockbutton">
+                        <button class="inscriptionEvenement" data-id="${
+                            event.id
+                        }">S'inscrire</button>
+                        <p class="messageErreur" style="color: red; display: none;"></p>
+                    </div>
+            `;
+
+            // Gérer l'inscription
+            document
+                .querySelector(".inscriptionEvenement")
+                .addEventListener("click", async () => {
+                    await inscrireUtilisateur(event.id);
+                });
         } catch (error) {
-            console.error(
-                "Erreur lors de la récupération du rôle de l'utilisateur :",
-                error
-            );
+            console.error("Erreur :", error);
+            eventDetailsContainer.innerHTML =
+                "<p>Impossible de charger les détails de l'événement.</p>";
+        }
+    }
+
+    // Charger tous les événements
+    const eventsContainer = document.getElementById("events-container");
+    if (eventsContainer) {
+        try {
+            const response = await fetch("/events");
+            if (!response.ok)
+                throw new Error("Erreur lors du chargement des événements");
+
+            const evenements = await response.json();
+
+            eventsContainer.innerHTML = evenements
+                .map(
+                    (event) => `
+                <div class="blockevenement">
+                    <img src="${event.image_url}" alt="${event.title}" width="400px" height="300px" />
+                    <h3>${event.title}</h3>
+                    <p>Description : ${event.description}</p>
+                    <p>Date : ${event.date}</p>
+                    <p>Lieu : ${event.location}</p>
+                    <div class="blockbutton">
+                        <button class="inscriptionEvenement" data-id="${event.id}">S'inscrire</button>
+                        <button class="voirevenement" data-id="${event.id}">Voir</button>
+                        <p class="messageErreur" style="color: red; display: none;"></p>
+                    </div>
+                </div>
+            `
+                )
+                .join("");
+
+            // Gérer la navigation vers la page de détails
+            document.querySelectorAll(".voirevenement").forEach((button) => {
+                button.addEventListener("click", (event) => {
+                    const eventId = event.target.getAttribute("data-id");
+                    window.location.href = `/evenement/${eventId}`;
+                });
+            });
+
+            // Gérer les inscriptions
+            document
+                .querySelectorAll(".inscriptionEvenement")
+                .forEach((button) => {
+                    button.addEventListener("click", async (event) => {
+                        const eventId = event.target.getAttribute("data-id");
+                        await inscrireUtilisateur(eventId);
+                    });
+                });
+        } catch (error) {
+            console.error("Erreur :", error);
+            eventsContainer.innerHTML =
+                "<p>Impossible de charger les événements.</p>";
         }
     }
 });
 
-const getEventIdFromURL = () => {
-    const eventId = window.location.pathname.split("/").pop();
-    return isNaN(eventId) ? null : eventId;
-};
-
-const fetchData = async (url) => {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Erreur lors du chargement");
-        return await response.json();
-    } catch (error) {
-        console.error("Erreur :", error);
-        return null;
-    }
-};
-
-const loadEventDetails = async (eventId) => {
-    const container = document.getElementById("event-details");
-    if (!container) return;
-
-    const event = await fetchData(`/api/evenement/${eventId}`);
-    container.innerHTML = event
-        ? generateEventDetailsHTML(event)
-        : "<p>Impossible de charger les détails.</p>";
-    document
-        .querySelector(".inscriptionEvenement")
-        ?.addEventListener("click", () => inscrireUtilisateur(eventId));
-};
-
-const loadAllEvents = async () => {
-    const container = document.getElementById("events-container");
-    if (!container) return;
-
-    const events = await fetchData("/events");
-    container.innerHTML = events
-        ? events.map(generateEventCardHTML).join("")
-        : "<p>Impossible de charger les événements.</p>";
-    attachEventListeners();
-};
-
-const generateEventDetailsHTML = (event) => `
-    <div class="blockevenement">
-        <img class="imagedescription" src="${event.image_url}" alt="${
-    event.title
-}" width="400px" height="300px" />
-        <div class="blockevenement1">
-            <h3>${event.title}</h3>
-            <p class="blocdescription">Description : ${
-                event.description ?? "Aucune description disponible"
-            }</p>
-            <p>Date : ${event.date}</p>
-            <p>Lieu : ${event.location ?? "Lieu non précisé"}</p>
-         
-        </div>
-    </div>
-       <div class="blockbutton">${generateInscriptionButton(event.id)}</div>`;
-
-const generateEventCardHTML = (event) => `
-    <div class="blockevenement" data-event-id="${event.id}">
-        <img src="${event.image_url}" alt="${
-    event.title
-}" width="300px" height="300px" />
-        <h3>${event.title}</h3>
-        <p>Description : ${
-            event.description ?? "Aucune description disponible"
-        }</p>
-        <p>Date : ${event.date}</p>
-        <p>Lieu : ${event.location ?? "Lieu non précisé"}</p>
-       
-    </div>
-     <div class="blockbutton">
-            ${generateInscriptionButton(event.id)}
-            <button class="voirevenement" data-id="${event.id}">Voir</button>
-        </div>`;
-
-const generateInscriptionButton = (eventId) => {
+// Fonction pour gérer l'inscription d'un utilisateur
+async function inscrireUtilisateur(eventId) {
     const userId = localStorage.getItem("user_id");
-    const userRole = localStorage.getItem("user_role"); // Récupère le rôle de l'utilisateur
-    console.log(userRole);
-
-    if (!userId)
-        return `<a href="/connexion" class="inscriptionEvenement">Connectez-vous pour vous inscrire</a>`;
-
-    // Rôle de l'utilisateur : s'il est administrateur, pas de bouton d'inscription
-    return userRole && userRole !== "administrateur"
-        ? `<button class="inscriptionEvenement" data-id="${eventId}">S'inscrire</button>`
-        : "";
-};
-
-const attachEventListeners = () => {
-    document.querySelectorAll(".voirevenement").forEach((btn) => {
-        btn.addEventListener(
-            "click",
-            () => (window.location.href = `/evenement/${btn.dataset.id}`)
-        );
-    });
-    document
-        .querySelectorAll(".inscriptionEvenement:not([disabled])")
-        .forEach((btn) => {
-            btn.addEventListener(
-                "click",
-                async () => await inscrireUtilisateur(btn.dataset.id, btn)
-            );
-        });
-};
-
-const inscrireUtilisateur = async (eventId, button = null) => {
-    const userId = localStorage.getItem("user_id");
-    if (!userId) return (window.location.href = "/connexion");
-
-    const response = await fetch("/inscription", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, event_id: eventId }),
-    });
-
-    const result = await response.json();
-    if (!response.ok) {
-        const errorMessage = button?.nextElementSibling;
-        if (errorMessage) {
-            errorMessage.textContent =
-                result.message || "Erreur lors de l'inscription.";
-            errorMessage.style.display = "block";
-        }
+    if (!userId) {
+        alert("Veuillez vous connecter pour vous inscrire.");
         return;
     }
 
-    window.location.href = "/profil_participant#events-container";
-    if (button) {
-        button.disabled = true;
-        button.textContent = "Déjà inscrit";
+    try {
+        const response = await fetch("/inscription", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userId, event_id: eventId }),
+        });
+
+        const result = await response.json(); // Récupérer la réponse JSON
+
+        if (!response.ok) {
+            // Afficher le message d'erreur du serveur
+            document.querySelector(
+                `button[data-id="${eventId}"]`
+            ).nextElementSibling.textContent =
+                result.message ||
+                "Échec de l'inscription. Vous êtes peut-être déjà inscrit.";
+            document.querySelector(
+                `button[data-id="${eventId}"]`
+            ).nextElementSibling.style.display = "block";
+            return; // Sortir de la fonction pour ne pas afficher l'alerte de succès
+        }
+
+        alert("Inscription réussie !");
+    } catch (error) {
+        console.error("Erreur :", error);
+        document.querySelector(
+            `button[data-id="${eventId}"]`
+        ).nextElementSibling.textContent =
+            "Échec de l'inscription. Vous êtes peut-être déjà inscrit.";
+        document.querySelector(
+            `button[data-id="${eventId}"]`
+        ).nextElementSibling.style.display = "block";
     }
-};
+}

@@ -35,8 +35,7 @@ main{
    border-radius: 10px;
    display: flex;
    justify-content: space-around;
-  background-color: rgba(128, 128, 128, 0.896);
-  color: white;
+
 }
 .blockevenement1{
     margin-left: 20px;
@@ -76,6 +75,7 @@ main{
 }
 .imagedescription{
     width: 300px;
+    height: 200px;
    border-radius: 10px;
     
 }
@@ -83,5 +83,8 @@ main{
 
     height: 100vh;
     margin-top: 50px;
+}
+.messageErreur{
+    width: 250px;
 }
 }

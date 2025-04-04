@@ -1024,6 +1024,26 @@ app.post("/contact", async (req, res) => {
         res.status(500).json({ message: "Erreur serveur" });
     }
 });
+app.get("/api/check-event", async (req, res) => {
+    const { date, location } = req.query;
+
+    if (!date || !location) {
+        return res.status(400).json({ message: "Date et lieu sont requis." });
+    }
+
+    try {
+        const event = await checkIfEventExists(date, location);
+
+        if (event) {
+            res.json({ exists: true, eventId: event.id });
+        } else {
+            res.json({ exists: false });
+        }
+    } catch (error) {
+        console.error("Erreur lors de la vérification de l'événement :", error);
+        res.status(500).json({ message: "Erreur serveur." });
+    }
+});
 // Attacher `router` à l'application
 app.use(router);
 

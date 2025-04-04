@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function inscrireUtilisateur(eventId) {
     const userId = localStorage.getItem("user_id");
     if (!userId) {
-        alert("Veuillez vous connecter pour vous inscrire.");
+        window.location.href = "/connexion";
         return;
     }
 

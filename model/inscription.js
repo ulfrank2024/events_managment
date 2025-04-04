@@ -3,6 +3,35 @@ import { createNotification } from "../model/notification.js";
 import { sendEmail } from "../service/emailService.js"; // Import du service d'email
 
 // Inscription à un événement
+/**
+ * @swagger
+ * /events/{event_id}/register:
+ * post:
+ * summary: Inscrire un utilisateur à un événement.
+ * parameters:
+ * - in: path
+ * name: event_id
+ * required: true
+ * description: ID de l'événement.
+ * schema:
+ * type: integer
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * user_id:
+ * type: integer
+ * responses:
+ * 200:
+ * description: Inscription réussie.
+ * 400:
+ * description: L'utilisateur est déjà inscrit ou événement non trouvé.
+ * 500:
+ * description: Erreur serveur.
+ */
 export async function registerForEvent(user_id, event_id) {
     try {
         // Vérifier si l'utilisateur est déjà inscrit
@@ -73,6 +102,35 @@ export async function registerForEvent(user_id, event_id) {
 
 }
 // Annulation d'inscription à un événement
+/**
+ * @swagger
+ * /events/{event_id}/cancel:
+ * put:
+ * summary: Annuler l'inscription d'un utilisateur à un événement.
+ * parameters:
+ * - in: path
+ * name: event_id
+ * required: true
+ * description: ID de l'événement.
+ * schema:
+ * type: integer
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * user_id:
+ * type: integer
+ * responses:
+ * 200:
+ * description: Inscription annulée avec succès.
+ * 400:
+ * description: Événement non trouvé.
+ * 500:
+ * description: Erreur serveur.
+ */
 export async function cancelEventRegistration(user_id, event_id) {
     try {
         // Récupérer les informations de l'événement
@@ -125,6 +183,24 @@ export async function cancelEventRegistration(user_id, event_id) {
 }
 
 // Récupérer le nombre d'événements auxquels un utilisateur est inscrit
+/**
+ * @swagger
+ * /users/{user_id}/events/count:
+ * get:
+ * summary: Récupérer le nombre d'événements inscrits par un utilisateur.
+ * parameters:
+ * - in: path
+ * name: user_id
+ * required: true
+ * description: ID de l'utilisateur.
+ * schema:
+ * type: integer
+ * responses:
+ * 200:
+ * description: Nombre d'événements inscrits par l'utilisateur.
+ * 500:
+ * description: Erreur serveur.
+ */
 export async function getStudentEventCount(user_id) {
     try {
         const result = await connexion.get(
@@ -139,6 +215,24 @@ export async function getStudentEventCount(user_id) {
 }
 
 // Récupérer les événements auxquels l'utilisateur est inscrit
+/**
+ * @swagger
+ * /users/{user_id}/events:
+ * get:
+ * summary: Récupérer les événements auxquels l'utilisateur est inscrit.
+ * parameters:
+ * - in: path
+ * name: user_id
+ * required: true
+ * description: ID de l'utilisateur.
+ * schema:
+ * type: integer
+ * responses:
+ * 200:
+ * description: Liste des événements inscrits par l'utilisateur.
+ * 500:
+ * description: Erreur serveur.
+ */
 export async function getStudentEvents(user_id) {
     try {
         const events = await connexion.all(
@@ -153,6 +247,18 @@ export async function getStudentEvents(user_id) {
         throw error;
     }
 }
+//Récupérer le nombre d'inscriptions par mois
+/**
+ * @swagger
+ * /inscriptions/monthly:
+ * get:
+ * summary: Récupérer le nombre d'inscriptions par mois.
+ * responses:
+ * 200:
+ * description: Liste des inscriptions par mois.
+ * 500:
+ * description: Erreur serveur.
+ */
 export async function getnumberInscription() {
     try {
         // Récupérer le nombre d'inscriptions à la plateforme par mois
@@ -172,6 +278,18 @@ export async function getnumberInscription() {
         throw error;
     }
 }
+//Récupérer les détails des inscriptions
+/**
+ * @swagger
+ * /inscriptions:
+ * get:
+ * summary: Récupérer les détails des inscriptions.
+ * responses:
+ * 200:
+ * description: Liste des détails des inscriptions.
+ * 500:
+ * description: Erreur serveur.
+ */
 export async function getInscription() {
     try {
         const inscriptions = await connexion.all(`

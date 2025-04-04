@@ -81,6 +81,9 @@ h1 {
 .desc{
     width: 200px;
 }
+button{
+    margin: 5px;
+}
 @media (max-width: 480px) {
 /* Style pour la liste d'événements */
 .events-list {

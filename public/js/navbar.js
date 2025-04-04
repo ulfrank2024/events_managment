@@ -21,6 +21,23 @@ window.addEventListener("load", async function () {
                     ? "/profil"
                     : "/profil_participant";
             console.log("✅ Lien mis à jour :", profilLink.href);
+
+            // Récupérer la quantité d'articles dans le panier (si l'utilisateur est un participant)
+            if (data.role === "participant") {
+                const panierResponse = await fetch("/api/panier/quantite"); // Assurez-vous que cette route existe
+                if (panierResponse.ok) {
+                    const panierData = await panierResponse.json();
+                    const centeredNumber =
+                        document.querySelector(".centered-number");
+                    if (centeredNumber) {
+                        centeredNumber.textContent = panierData.quantite;
+                    }
+                } else {
+                    console.error(
+                        "Erreur lors de la récupération de la quantité du panier."
+                    );
+                }
+            }
         } catch (error) {
             console.error("❌ Erreur lors de la récupération du rôle :", error);
         }
@@ -45,5 +62,3 @@ window.addEventListener("load", async function () {
         });
     }
 });
-
-

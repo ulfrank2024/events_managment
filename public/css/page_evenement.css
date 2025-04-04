@@ -7,7 +7,7 @@
     width: 100px;
     border: none;
     width: 200px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 .back-button:hover{
       border-color: rgba(0, 0, 0, 0.5); 
@@ -21,21 +21,22 @@ main{
     align-items: center;
     justify-content: center;
     gap:10px;
-    padding-top: 50px;
+    padding-top: 10px;
     padding-bottom: 20px;
-    height: 70vh;
+    height: 90vh;
+    
 }
-
 .imagedescription{
     width: 500px;
    border-radius: 10px;
     
 }
 .blockevenement{
-   padding-bottom: 20px;
    border-radius: 10px;
    display: flex;
    justify-content: space-around;
+  background-color: rgba(128, 128, 128, 0.896);
+  color: white;
 }
 .blockevenement1{
     margin-left: 20px;
@@ -66,10 +67,11 @@ main{
    display: flex;
    flex-direction: column;
    justify-content: center;
+   align-items: center;
  
 }
 .blockevenement1{
-    margin-left: 0px;
+    margin-left:0;
     width: 300px;
 }
 .imagedescription{
@@ -79,6 +81,7 @@ main{
 }
 main{
 
-    height: 90vh;
+    height: 100vh;
+    margin-top: 50px;
 }
 }

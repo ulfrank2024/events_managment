@@ -2,6 +2,33 @@ import { existsSync, unlinkSync } from "fs";
 import { connexion } from "../db/db.js";
 import {createNotification} from "../model/notification.js"
 // fonction pour creer un evenement
+/**
+ * @swagger
+ * /events:
+ * post:
+ * summary: Créer un événement
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * title: { type: string }
+ * description: { type: string }
+ * date: { type: string, format: date-time }
+ * location: { type: string }
+ * organizer_id: { type: integer }
+ * image_url: { type: string }
+ * category: { type: string }
+ * responses:
+ * 200:
+ * description: Succès
+ * 400:
+ * description: Salle réservée
+ * 500:
+ * description: Erreur serveur
+ */
 export async function createEvent(
     title,
     description,
@@ -39,6 +66,19 @@ export async function createEvent(
     );
 }
 //fonction pour recuperer tous les element par cathegorie
+/**
+ * @swagger
+ * /events/category/{category}:
+ * get:
+ * summary: Événements par catégorie
+ * parameters:
+ * - in: path, name: category, required: true, schema: { type: string }
+ * responses:
+ * 200:
+ * description: Liste des événements
+ * 500:
+ * description: Erreur serveur
+ */
 export async function GetEventsByCategory(category) {
     try {
         const events = await connexion.all(
@@ -54,6 +94,18 @@ export async function GetEventsByCategory(category) {
         throw error;
     }
 }
+//fonction pour compter tous les element par cathegorie
+/**
+ * @swagger
+ * /events/category/count:
+ * get:
+ * summary: Compter les événements par catégorie
+ * responses:
+ * 200:
+ * description: Nombre d'événements par catégorie
+ * 500:
+ * description: Erreur serveur
+ */
 export async function GetEventCountByCategory() {
     try {
         const categories = await connexion.all(`
@@ -73,6 +125,17 @@ export async function GetEventCountByCategory() {
 
 
 //fonction pour recuperer tous les element
+/**
+ * @swagger
+ * /events:
+ * get:
+ * summary: Tous les événements
+ * responses:
+ * 200:
+ * description: Liste de tous les événements
+ * 500:
+ * description: Erreur serveur
+ */
 export async function GetAllEvent() {
     try {
         const events = await connexion.all("SELECT * FROM events");
@@ -82,8 +145,23 @@ export async function GetAllEvent() {
         throw error;
     }
 }
-// fonction pour delet un evenement
+
 // Fonction pour supprimer un événement
+/**
+ * @swagger
+ * /events/{id}:
+ * delete:
+ * summary: Supprimer un événement
+ * parameters:
+ * - in: path, name: id, required: true, schema: { type: integer }
+ * responses:
+ * 200:
+ * description: Succès
+ * 404:
+ * description: Non trouvé
+ * 500:
+ * description: Erreur serveur
+ */
 export async function DeletEvent(id) {
     try {
         console.log(`🔍 Suppression de l'événement ID : ${id}`);
@@ -119,6 +197,28 @@ export async function DeletEvent(id) {
 }
 
 //*****fonction pour modifier un evenement */
+/**
+ * @swagger
+ * /events/{eventId}:
+ * put:
+ * summary: Mettre à jour un événement
+ * parameters:
+ * - in: path, name: eventId, required: true, schema: { type: integer }
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties: { title: { type: string }, description: { type: string }, date: { type: string, format: date-time }, location: { type: string }, organizer_id: { type: integer }, image_url: { type: string }, category: { type: string } }
+ * responses:
+ * 200:
+ * description: Succès
+ * 404:
+ * description: Non trouvé
+ * 500:
+ * description: Erreur serveur
+ */
 export async function updateEvent(
     eventId,
     title,
@@ -170,8 +270,21 @@ export async function updateEvent(
 
 
 // Fonction pour récupérer un événement par ID
-// Fonction pour récupérer un événement par ID
-// Fonction pour récupérer un événement par ID
+/**
+ * @swagger
+ * /events/{id}:
+ * get:
+ * summary: Récupérer un événement par ID
+ * parameters:
+ * - in: path, name: id, required: true, schema: { type: integer }
+ * responses:
+ * 200:
+ * description: Événement trouvé
+ * 404:
+ * description: Non trouvé
+ * 500:
+ * description: Erreur serveur
+ */
 export async function GetEventById(id) {
     try {
         const event = await connexion.get("SELECT * FROM events WHERE id = ?", [
@@ -195,6 +308,19 @@ export async function GetEventById(id) {
 
 
 // Fonction pour compter le nombre d'événements auxquels un étudiant est inscrit
+/**
+ * @swagger
+ * /students/{user_id}/events/count:
+ * get:
+ * summary: Compter les événements d'un étudiant
+ * parameters:
+ * - in: path, name: user_id, required: true, schema: { type: integer }
+ * responses:
+ * 200:
+ * description: Nombre d'événements de l'étudiant
+ * 500:
+ * description: Erreur serveur
+ */
 export async function getEventCountForStudent(user_id) {
     try {
         const result = await connexion.get(
@@ -212,6 +338,17 @@ export async function getEventCountForStudent(user_id) {
 }
 
 // Fonction pour compter le nombre total d'étudiants
+/**
+ * @swagger
+ * /students/total:
+ * get:
+ * summary: Compter tous les étudiants
+ * responses:
+ * 200:
+ * description: Nombre total d'étudiants
+ * 500:
+ * description: Erreur serveur
+ */
 export async function getTotalStudents() {
     try {
         const result = await connexion.get(
@@ -225,6 +362,17 @@ export async function getTotalStudents() {
 }
 
 // Fonction pour compter le nombre total d'événements enregistrés
+/**
+ * @swagger
+ * /students/total:
+ * get:
+ * summary: Compter tous les étudiants
+ * responses:
+ * 200:
+ * description: Nombre total d'étudiants
+ * 500:
+ * description: Erreur serveur
+ */
 export async function getTotalEvents() {
     try {
         const result = await connexion.get(
@@ -237,6 +385,17 @@ export async function getTotalEvents() {
     }
 }
 //fonction qui permet de récupérer un événement par son ID 
+/**
+ * @swagger
+ * /students/total:
+ * get:
+ * summary: Compter tous les étudiants
+ * responses:
+ * 200:
+ * description: Nombre total d'étudiants
+ * 500:
+ * description: Erreur serveur
+ */
 export async function GetEventDetailsById(id) {
     try {
         const event = await connexion.get("SELECT * FROM events WHERE id = ?", [
@@ -251,6 +410,17 @@ export async function GetEventDetailsById(id) {
         throw error;
     }
 }
+/**
+ * @swagger
+ * /students/total:
+ * get:
+ * summary: Compter tous les étudiants
+ * responses:
+ * 200:
+ * description: Nombre total d'étudiants
+ * 500:
+ * description: Erreur serveur
+ */
 export async function checkIfEventExists(date, location) {
     try {
         const event = await connexion.get(

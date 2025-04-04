@@ -3,6 +3,42 @@ import bcrypt from "bcryptjs";
 
 
 // ✅ Récupérer un utilisateur par ID
+/**
+ * @swagger
+ * /users/{id_utilisateur}:
+ * get:
+ * summary: Récupérer un utilisateur par ID.
+ * parameters:
+ * - in: path
+ * name: id_utilisateur
+ * required: true
+ * description: ID de l'utilisateur.
+ * schema:
+ * type: integer
+ * responses:
+ * 200:
+ * description: Utilisateur trouvé.
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * id:
+ * type: integer
+ * name:
+ * type: string
+ * email:
+ * type: string
+ * role:
+ * type: string
+ * created_at:
+ * type: string
+ * format: date-time
+ * 404:
+ * description: Utilisateur non trouvé.
+ * 500:
+ * description: Erreur serveur.
+ */
 export async function getUtilisateurById(id_utilisateur) {
     try {
         return await connexion.get(`SELECT * FROM users WHERE id = ?`, [
@@ -18,6 +54,42 @@ export async function getUtilisateurById(id_utilisateur) {
 }
 
 // ✅ Récupérer un utilisateur par courriel
+/**
+ * @swagger
+ * /users/email/{courriel}:
+ * get:
+ * summary: Récupérer un utilisateur par courriel.
+ * parameters:
+ * - in: path
+ * name: courriel
+ * required: true
+ * description: Courriel de l'utilisateur.
+ * schema:
+ * type: string
+ * responses:
+ * 200:
+ * description: Utilisateur trouvé.
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * id:
+ * type: integer
+ * name:
+ * type: string
+ * email:
+ * type: string
+ * role:
+ * type: string
+ * created_at:
+ * type: string
+ * format: date-time
+ * 404:
+ * description: Utilisateur non trouvé.
+ * 500:
+ * description: Erreur serveur.
+ */
 export async function getUtilisateurByCourriel(courriel) {
     try {
         return await connexion.get(`SELECT * FROM users WHERE email = ?`, [
@@ -49,6 +121,35 @@ export async function utilisateurcomplet() {
 
 
 // ✅ Ajouter un utilisateur avec hashage du mot de passe
+/**
+ * @swagger
+ * /users:
+ * get:
+ * summary: Récupérer tous les utilisateurs.
+ * responses:
+ * 200:
+ * description: Liste de tous les utilisateurs.
+ * content:
+ * application/json:
+ * schema:
+ * type: array
+ * items:
+ * type: object
+ * properties:
+ * id:
+ * type: integer
+ * name:
+ * type: string
+ * email:
+ * type: string
+ * role:
+ * type: string
+ * created_at:
+ * type: string
+ * format: date-time
+ * 500:
+ * description: Erreur serveur.
+ */
 export async function addUtilisateur(name, email, password, role) {
     try {
         console.log("Mot de passe reçu avant hashage :", password);
@@ -79,6 +180,34 @@ export async function addUtilisateur(name, email, password, role) {
 }
 
 // ✅ Afficher le profil d'un utilisateur
+/**
+ * @swagger
+ * /users:
+ * post:
+ * summary: Ajouter un nouvel utilisateur.
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * name:
+ * type: string
+ * email:
+ * type: string
+ * password:
+ * type: string
+ * role:
+ * type: string
+ * responses:
+ * 201:
+ * description: Utilisateur ajouté avec succès.
+ * 400:
+ * description: Utilisateur avec ce courriel existe déjà.
+ * 500:
+ * description: Erreur serveur.
+ */
 export async function GetUserProfile(user_id) {
     try {
         return await connexion.get(

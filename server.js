@@ -122,28 +122,36 @@ app.use((req, res, next) => {
 
 // Routes principales
 app.get("/", async (req, res) => {
+    const userId = req.user ? req.user.id : null;
+     const eventCount = await getStudentEventCount(userId);
     res.render("Acceuil", {
         titre: "Accueil | EvenementScolaire",
         style: ["/css/liste_evenement.css", "/css/listeevenment.css"],
         script: ["/js/lisedesEvenement.js", "/js/itemsCathegorie.js"],
         user: req.user,
+        eventCount,
     });
 });
 
 app.get("/About", async (req, res) => {
+    const userId = req.user ? req.user.id : null;
+    const eventCount = await getStudentEventCount(userId);
     res.render("About", {
         titre: "About | EvenementScolaire",
         style: ["/css/About.css"],
-        script: [],
+        script: ["/js/formulairecontact.js"],
         user: req.user,
+        eventCount,
     });
 });
 router.get("/categories/:category", async (req, res) => {
+    const userId = req.user ? req.user.id : null;
     try {
         const category = req.params.category;
 
         // Récupérer les événements correspondant à cette catégorie
         const events = await GetEventsByCategory(category);
+           const eventCount = await getStudentEventCount(userId);
 
         // Rendre la page avec les événements récupérés
         res.render("cathegories", {
@@ -153,6 +161,7 @@ router.get("/categories/:category", async (req, res) => {
             user: req.user, // Si tu gères l'authentification
             category,
             events,
+            eventCount,
             message: events.length === 0 ? "Aucun événement trouvé." : null,
         });
     } catch (error) {
@@ -326,8 +335,10 @@ app.get("/api/get-user-role", (req, res) => {
 
 // Middleware pour rendre la page d'événement
 router.get("/evenement/:id", async (req, res) => {
+    const userId = req.user ? req.user.id : null;
     try {
         const event = await GetEventDetailsById(req.params.id);
+         const eventCount = await getStudentEventCount(userId);
         if (!event) return res.status(404).send("Événement introuvable");
 
         res.render("VoirEvement", {
@@ -336,6 +347,7 @@ router.get("/evenement/:id", async (req, res) => {
             style: ["/css/page_evenement.css"],
             script: ["/js/page_evenement.js"],
             user: req.user,
+            eventCount,
         });
     } catch (error) {
         res.status(500).send("Erreur serveur");
@@ -984,6 +996,32 @@ app.get("/inscriptionsevent", async (req, res) => {
             error.message
         );
         res.status(500).json({ error: "Erreur serveur" });
+    }
+});
+app.post("/contact", async (req, res) => {
+    try {
+        if (!req.user) {
+            // L'utilisateur n'est pas connecté, renvoyer une erreur 401
+            return res
+                .status(401)
+                .json({ message: "Utilisateur non connecté." });
+        }
+
+        const { nom, email, message } = req.body;
+
+        // Envoyer l'e-mail en utilisant la fonction sendEmail
+        await sendEmail(
+            "ulrichfranklinlontsinobossi@gmail.com", // Destinataire
+            "Nouveau message de eventSchool", // Sujet
+            `Nom: ${nom}\nEmail: ${email}\nMessage: ${message}` // Corps du message
+        );
+
+        return res
+            .status(200)
+            .json({ message: "Message envoyé avec succès !" }); // Renvoyer une réponse JSON
+    } catch (error) {
+        console.error("Erreur lors de l'envoi de l'e-mail :", error);
+        res.status(500).json({ message: "Erreur serveur" });
     }
 });
 // Attacher `router` à l'application

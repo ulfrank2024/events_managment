@@ -334,10 +334,13 @@ header nav ul li input[type="text"]:focus {
 }
 .events-list{
     display: flex;
-    gap : 20px
+    gap : 20px;
+    justify-content: center;
+    align-items: center;
 }
 .listeevent{
     background-color: white;
+
 
 }
 hr{
@@ -359,6 +362,21 @@ hr{
 .lien:hover {
     transform: translateY(-10px) scale(1.05);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+.categorie{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.categorie h2{
+   text-align: center;
+   background-color:orange;
+   padding: 10px;
+   color:white;
+   width: 700px;
+
 }
 @media (max-width: 600px) {
     header h1 {
@@ -386,8 +404,8 @@ header {
 .events-list{
     display: flex;
     flex-direction: column;
-    gap: 10px;
     justify-content: center;
+    align-items: center;
 }
 #temoignages {
 
@@ -406,6 +424,11 @@ header nav ul li a {
     color: white; /* Couleur des liens (blanc ici) */
     font-size: 1em; /* Taille du texte des liens */
     transition: color 0.3s; /* Ajouter une transition fluide lors du survol */
+}
+.categorie h2{
+  
+   width: 100%;
+
 }
   .icon-item {
             display: flex;

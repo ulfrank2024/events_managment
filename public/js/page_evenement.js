@@ -135,7 +135,7 @@ async function inscrireUtilisateur(eventId) {
             return; // Sortir de la fonction pour ne pas afficher l'alerte de succès
         }
 
-        alert("Inscription réussie !");
+         window.location.href = `/profil_participant`;
     } catch (error) {
         console.error("Erreur :", error);
         document.querySelector(
